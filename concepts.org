@@ -2,7 +2,7 @@
 
 ** Unit 1 - What is the proper role of government?
 
-*** Introduction and Ideology :: Chapter 1 and 12.1 
+*** Introduction and Ideology :: Chapter 1 and 12.1
 Declaration of Independence
 Democracy
 Natural Rights
@@ -24,7 +24,7 @@ Libertarianism
 + Explain how U.S. political culture (e.g., values, attitudes, and beliefs) influences the formation, goals, and implementation of public policy over time.
 
 
-*** Constitution :: Chapter 2  
+*** Constitution :: Chapter 2
 Republic
 Articles of Confederation
 Unicameral
