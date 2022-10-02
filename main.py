@@ -162,17 +162,17 @@ if __name__ == "__main__":
         # print unit line
         if unitNum:
             print(cardDict["UnitNum"] + ": ", end="")
-        else:
-            print("Unit: ", end="")
         if unitTitle:
+            if not unitNum:
+                print("Unit: ", end="")
             print(cardDict["UnitName"])
 
         # print chapter line
         if chapterNum:
             print(cardDict["ChapterNum"][0:-1] + ": ", end="")
-        else:
-            print("Chapter: ", end="")
         if chapterTitle:
+            if not chapterNum:
+                print("Chapter: ", end="")
             print(cardDict["ChapterName"])
 
         # print term
