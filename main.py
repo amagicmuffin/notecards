@@ -1,4 +1,3 @@
-# TODO [Include] gets reset on [return], weird
 import curses
 import configparser
 import random
@@ -17,6 +16,7 @@ term = False
 definition = False
 include_longform = False
 starred_only = False
+
 
 def updateVocabList():
     with open("concepts.org") as file:
@@ -42,7 +42,6 @@ def updateVocabList():
                     currentChapterName = unitSplit[0]
     
             # if line is a vocab word, save it to vocabList
-            # TODO doesnt play nice w/ emacs bold.
             if len(line) != 0 and line[0] != "*":  # ignore other headings
                 splitLine = line.split(": ")  # TODO let this be configgable ig
                 vocabList.append({
@@ -53,14 +52,9 @@ def updateVocabList():
                     "Data": splitLine[0],
                     "Definition": splitLine[1] if len(splitLine) == 2 else "n/a",
                 })
-                
-# import json  # FOR DEBUG: prettily look at dict
-# print(json.dumps(vocabList, indent=4))
-# for i in vocabList:
-#     print(i)
+
 
 def updateConfig():
-    """"""
     config.read("config.ini")
 
     # update includeChapters
@@ -99,6 +93,7 @@ def getCard():
                 found = True  # technically not needed since we return out but just in case
                 return vocabCard
 
+
 def changeIncludeChapters(chapters: str):
     config["Chapters"]["chapters"] = chapters
     with open("config.ini", "w") as f:
@@ -107,23 +102,14 @@ def changeIncludeChapters(chapters: str):
     updateConfig()
 
 
-def processInput(i):
-    if i == "":
+def addStr(yPos, str, wrap, scr_width, stdscr):
+    if wrap == "shorten":
+        stdscr.addstr(yPos, 2, textwrap.shorten(str, width=scr_width-3, placeholder="..."))
         return
-
-    # change IncludeChapters config if input includes only digits, commas, or spaces
-    shouldChangeIncludeChapters: bool = True
-    for char in i:
-        if char not in string.digits + ", ":
-            shouldChangeIncludeChapters = False
-            continue
-
-    if shouldChangeIncludeChapters:
-        changeIncludeChapters(i)
-
-    # TODO rewrite changeIncludeChapters() as 
-    # changeIncludeChapters(section: str, key: str, value: str) # use config[section][key]
-            
+    if wrap == "fill":
+        stdscr.addstr(yPos, 2, textwrap.fill(str, width=scr_width-3, subsequent_indent="  "))
+        return
+    raise Exception('wrap type must either be "shorten" or "fill"')
 
 
 def startFlashcards(stdscr):
@@ -136,7 +122,6 @@ def startFlashcards(stdscr):
 
     k = 0
     while k != ord('q'):
-        # old: print("\n"*50)
         stdscr.erase()
 
         cardDict = getCard()
@@ -157,51 +142,37 @@ def startFlashcards(stdscr):
 
             cardFound = True
 
-        
-
         scr_height, scr_width = stdscr.getmaxyx()
         
         # print unit line
         s = ""
         if unitNum:
-            # print(cardDict["UnitNum"] + ": ", end="")
             s += cardDict["UnitNum"] + ": "
         else:
-            # print("Unit: ", end="")
             s += "Unit: "
         if unitTitle:
-            # print(cardDict["UnitName"])
             s += cardDict["UnitName"]
-        stdscr.addstr(1, 2, textwrap.shorten(s, width=scr_width-6, placeholder="..."))
+        addStr(1, s, "shorten", scr_width, stdscr)
 
         # print chapter line
         s = ""
         if chapterNum:
-            # print(cardDict["ChapterNum"][0:-1] + ": ", end="")
             s += cardDict["ChapterNum"][0:-1] + ": "
         else:
-            # print("Chapter: ", end="")
             s += "Chapter: "
         if chapterTitle:
-            # print(cardDict["ChapterName"])
             s += cardDict["ChapterName"]
-        stdscr.addstr(2, 2, textwrap.shorten(s, width=scr_width-6, placeholder="..."))
+        addStr(2, s, "shorten", scr_width, stdscr)
 
         # print term
         s = ""
         if term:
-            # print(cardDict["Data"])
             s = cardDict["Data"]
-            stdscr.addstr(4, 2, textwrap.fill(s, width=scr_width-6))
+            addStr(4, s, "fill", scr_width, stdscr)
             if definition:
                 stdscr.getch()
-                # print(cardDict["Definition"])
                 s = cardDict["Definition"]
-                stdscr.addstr(7, 2, textwrap.fill(s, width=scr_width-6))
-
-        # wait for input TODO: this is left over from non-curses version
-        # i = input()
-        # processInput(i)
+                addStr(7, s, "fill", scr_width, stdscr)
 
         stdscr.refresh()
         k = stdscr.getch()

@@ -39,7 +39,8 @@ s = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. \n\nPraesent vitae
 
 def main():
     # curses.wrapper(draw_menu)
-    print(textwrap.fill(s, replace_whitespace=False))
+    # print(textwrap.fill(s, replace_whitespace=False))
+    raise Exception("Date provided can't be in the past")
 
 if __name__ == "__main__":
     main()
