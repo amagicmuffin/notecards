@@ -1,8 +1,9 @@
 # TODO [Include] gets reset on [return], weird
-
+import curses
 import configparser
 import random
 import string
+import textwrap
 
 # static variables
 config = configparser.ConfigParser()
@@ -125,12 +126,18 @@ def processInput(i):
             
 
 
-if __name__ == "__main__":
+def startFlashcards(stdscr):
     updateVocabList()
     updateConfig()
 
-    while True:
-        print("\n"*50)
+    # Clear and refresh the screen for a blank canvas
+    stdscr.erase()
+    stdscr.refresh()
+
+    k = 0
+    while k != ord('q'):
+        # old: print("\n"*50)
+        stdscr.erase()
 
         cardDict = getCard()
 
@@ -151,38 +158,58 @@ if __name__ == "__main__":
             cardFound = True
 
         
-        # cardDict = getCard()
 
-        # # if we don't want longform questions (denoted by "+" prefix)
-        # if not include_longform:
-        #     # get a new card until no more "+" prefix
-        #     while cardDict["Data"][0] == "+":
-        #         cardDict = getCard()
-
+        scr_height, scr_width = stdscr.getmaxyx()
+        
         # print unit line
+        s = ""
         if unitNum:
-            print(cardDict["UnitNum"] + ": ", end="")
+            # print(cardDict["UnitNum"] + ": ", end="")
+            s += cardDict["UnitNum"] + ": "
+        else:
+            # print("Unit: ", end="")
+            s += "Unit: "
         if unitTitle:
-            if not unitNum:
-                print("Unit: ", end="")
-            print(cardDict["UnitName"])
+            # print(cardDict["UnitName"])
+            s += cardDict["UnitName"]
+        stdscr.addstr(1, 2, textwrap.shorten(s, width=scr_width-6, placeholder="..."))
 
         # print chapter line
+        s = ""
         if chapterNum:
-            print(cardDict["ChapterNum"][0:-1] + ": ", end="")
+            # print(cardDict["ChapterNum"][0:-1] + ": ", end="")
+            s += cardDict["ChapterNum"][0:-1] + ": "
+        else:
+            # print("Chapter: ", end="")
+            s += "Chapter: "
         if chapterTitle:
-            if not chapterNum:
-                print("Chapter: ", end="")
-            print(cardDict["ChapterName"])
+            # print(cardDict["ChapterName"])
+            s += cardDict["ChapterName"]
+        stdscr.addstr(2, 2, textwrap.shorten(s, width=scr_width-6, placeholder="..."))
 
         # print term
+        s = ""
         if term:
-            print(cardDict["Data"])
+            # print(cardDict["Data"])
+            s = cardDict["Data"]
+            stdscr.addstr(4, 2, textwrap.fill(s, width=scr_width-6))
             if definition:
-                input()
-                print(cardDict["Definition"])
+                stdscr.getch()
+                # print(cardDict["Definition"])
+                s = cardDict["Definition"]
+                stdscr.addstr(7, 2, textwrap.fill(s, width=scr_width-6))
 
-        # wait for input
-        i = input()
-        processInput(i)
-        
+        # wait for input TODO: this is left over from non-curses version
+        # i = input()
+        # processInput(i)
+
+        stdscr.refresh()
+        k = stdscr.getch()
+
+
+def main():
+    curses.wrapper(startFlashcards)
+
+
+if __name__ == "__main__":
+    main()
