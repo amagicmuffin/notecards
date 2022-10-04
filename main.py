@@ -12,8 +12,7 @@ unitNum = False
 unitTitle = False
 chapterNum = False
 chapterTitle = False
-term = False
-definition = False
+answer_with = ""
 include_longform = False
 starred_only = False
 
@@ -51,7 +50,16 @@ def updateVocabList():
                     "ChapterName":currentChapterName,
                     "Data": splitLine[0],
                     "Definition": splitLine[1] if len(splitLine) == 2 else "n/a",
+                    "Tested": False,
                 })
+
+
+def get_answer_with(i: str) -> str:
+    if i == "term":
+        return "term"
+    if i == "definition":
+        return "definition"
+    raise Exception('answer_with must either be "term" or "definition"')
 
 
 def updateConfig():
@@ -68,8 +76,7 @@ def updateConfig():
     global unitTitle
     global chapterNum
     global chapterTitle
-    global term
-    global definition
+    global answer_with
     global include_longform
     global starred_only
     include = config["Include"]
@@ -77,8 +84,7 @@ def updateConfig():
     unitTitle = include["unitTitle"] == "true"
     chapterNum = include["chapterNum"] == "true"
     chapterTitle = include["chapterTitle"] == "true"
-    term = include["term"] == "true"
-    definition = include["definition"] == "true"
+    answer_with = get_answer_with(include["answer_with"])
     include_longform = include["include_longform"] == "true"
     starred_only = include["starred_only"] == "true"
 
@@ -141,6 +147,7 @@ def startFlashcards(stdscr):
                     continue
 
             cardFound = True
+            
 
         scr_height, scr_width = stdscr.getmaxyx()
         
@@ -164,16 +171,16 @@ def startFlashcards(stdscr):
             s += cardDict["ChapterName"]
         addStr(2, s, "shorten", scr_width, stdscr)
 
-        # print term
-        s = ""
-        if term:
-            s = cardDict["Data"]
-            addStr(4, s, "fill", scr_width, stdscr)
-            if definition:
-                stdscr.getch()
-                s = cardDict["Definition"]
-                addStr(7, s, "fill", scr_width, stdscr)
+        # print term/definition
+        s = cardDict["Data"] if answer_with == "definition" else cardDict["Definition"]
+        addStr(4, s, "fill", scr_width, stdscr)
+        stdscr.refresh()
+        stdscr.getch()
+        
+        s = cardDict["Definition"] if answer_with == "definition" else cardDict["Data"]
+        addStr(7, s, "fill", scr_width, stdscr)                
 
+        # wait
         stdscr.refresh()
         k = stdscr.getch()
 
